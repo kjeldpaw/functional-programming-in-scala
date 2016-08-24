@@ -1,7 +1,5 @@
 package streams
 
-import common._
-
 /**
  * This trait represents the layout and building blocks of the game
  *

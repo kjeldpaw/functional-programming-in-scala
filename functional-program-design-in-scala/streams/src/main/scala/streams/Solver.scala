@@ -1,7 +1,5 @@
 package streams
 
-import common._
-
 /**
   * This component implements the solver for the Bloxorz game
   */
@@ -31,7 +29,7 @@ trait Solver extends GameDef {
     * that are inside the terrain.
     */
   def neighborsWithHistory(b: Block, history: List[Move]): Stream[(Block, List[Move])] = {
-    b.legalNeighbors.map((neighbor: (Block, Move)) => (neighbor._1, neighbor._2 :: history)).toStream
+    b.legalNeighbors.map({case (block, move) => (block, move :: history)}).toStream
   }
 
   /**
@@ -41,7 +39,7 @@ trait Solver extends GameDef {
     */
   def newNeighborsOnly(neighbors: Stream[(Block, List[Move])],
                        explored: Set[Block]): Stream[(Block, List[Move])] = {
-    neighbors.filter((neighbor: (Block, List[Move])) => !explored.contains(neighbor._1))
+    neighbors.filter{case (block, moves) => !explored.contains(block)}
   }
 
   /**
@@ -71,8 +69,8 @@ trait Solver extends GameDef {
            explored: Set[Block]): Stream[(Block, List[Move])] = {
     if (initial.isEmpty) Stream()
     else {
-      lazy val possiblePaths = initial.flatMap(p => newNeighborsOnly(neighborsWithHistory(p._1, p._2), explored))
-      initial #::: from(possiblePaths, explored union initial.map((path: (Block, List[Move])) => path._1).toSet)
+      lazy val possiblePaths = initial.flatMap({case (block, moves) => newNeighborsOnly(neighborsWithHistory(block, moves), explored)})
+      initial #::: from(possiblePaths, explored union initial.map({case (block, moves) => block}).toSet)
     }
   }
 
@@ -88,7 +86,7 @@ trait Solver extends GameDef {
     * with the history how it was reached.
     */
   lazy val pathsToGoal: Stream[(Block, List[Move])] = {
-    pathsFromStart.filter((path: (Block, List[Move])) => path._1 == Block(goal, goal))
+    pathsFromStart.filter({case (block, moves) => block == Block(goal, goal)})
   }
 
   /**
