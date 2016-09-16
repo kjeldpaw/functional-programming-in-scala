@@ -1,7 +1,9 @@
 package scalashop
 
-import org.scalameter._
+import java.util.concurrent._
+
 import common._
+import org.scalameter._
 
 object HorizontalBoxBlurRunner {
 
@@ -10,7 +12,7 @@ object HorizontalBoxBlurRunner {
     Key.exec.maxWarmupRuns -> 10,
     Key.exec.benchRuns -> 10,
     Key.verbose -> true
-  ) withWarmer(new Warmer.Default)
+  ) withWarmer new Warmer.Default
 
   def main(args: Array[String]): Unit = {
     val radius = 3
@@ -37,26 +39,31 @@ object HorizontalBoxBlurRunner {
 object HorizontalBoxBlur {
 
   /** Blurs the rows of the source image `src` into the destination image `dst`,
-   *  starting with `from` and ending with `end` (non-inclusive).
-   *
-   *  Within each row, `blur` traverses the pixels by going from left to right.
-   */
+    * starting with `from` and ending with `end` (non-inclusive).
+    *
+    * Within each row, `blur` traverses the pixels by going from left to right.
+    */
   def blur(src: Img, dst: Img, from: Int, end: Int, radius: Int): Unit = {
-  // TODO implement this method using the `boxBlurKernel` method
-
-  ???
+    for (y <- from until end) {
+      for (x <- 0 until src.width) {
+        dst(x, y) = boxBlurKernel(src, x, y, radius)
+      }
+    }
   }
 
   /** Blurs the rows of the source image in parallel using `numTasks` tasks.
-   *
-   *  Parallelization is done by stripping the source image `src` into
-   *  `numTasks` separate strips, where each strip is composed of some number of
-   *  rows.
-   */
+    *
+    * Parallelization is done by stripping the source image `src` into
+    * `numTasks` separate strips, where each strip is composed of some number of
+    * rows.
+    */
   def parBlur(src: Img, dst: Img, numTasks: Int, radius: Int): Unit = {
-  // TODO implement using the `task` construct and the `blur` method
-
-  ???
+    val range: Range = 0 to src.height by (src.height / Math.min(numTasks, src.height))
+    val ranges: IndexedSeq[(RGBA, RGBA)] = range zip range.tail
+    val tasks: IndexedSeq[ForkJoinTask[Unit]] = ranges.map({ case (from, to) => task(blur(src, dst, from, to, radius)) })
+    tasks foreach {
+      _.join
+    }
   }
 
 }
