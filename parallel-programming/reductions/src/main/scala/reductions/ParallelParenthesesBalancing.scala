@@ -1,7 +1,7 @@
 package reductions
 
-import org.scalameter._
 import common._
+import org.scalameter._
 
 object ParallelParenthesesBalancingRunner {
 
@@ -62,23 +62,31 @@ object ParallelParenthesesBalancing {
   def parBalance(chars: Array[Char], threshold: Int): Boolean = {
 
     def traverse(idx: Int, until: Int, arg1: Int, arg2: Int): (Int, Int) = {
-      var openRightParentheses = 0
-      var openLeftParentheses = 0
-      for (current <- idx until until) {
-        if (chars(current) == '(') openLeftParentheses = openLeftParentheses + 1
-        if (chars(current) == ')') openLeftParentheses = openLeftParentheses - 1
-        if (openLeftParentheses < openRightParentheses) openRightParentheses = openLeftParentheses
+      def traverseIter(idx: Int, until: Int, arg1: Int, arg2: Int): (Int, Int) = {
+        if(idx == until) (arg1, arg2)
+        else {
+          if (chars(idx) == '(')  {
+            traverseIter(idx + 1, until, arg1 + 1, arg2)
+          } else if (chars(idx) == ')') {
+            if(arg1 > 0) traverseIter(idx + 1, until, arg1 - 1, arg2)
+            else traverseIter(idx + 1, until, arg1, arg2 + 1)
+          } else {
+            traverseIter(idx + 1, until, arg1, arg2)
+          }
+        }
       }
-
-      (openRightParentheses, openLeftParentheses)
+      traverseIter(idx, until, 0, 0)
     }
 
     def reduce(from: Int, until: Int): (Int, Int) = {
-      if (until - from <= threshold) traverse(from, until, 0, 0)
+      if (until - from <= threshold) {
+        traverse(from, until, 0, 0)
+      }
       else {
         val middle = from + (until - from) / 2
         val (left, right) = parallel(reduce(from, middle), reduce(middle, until))
-        (Math.min(left._1, left._2 + right._1), left._2 + right._2)
+        val m = Math.min(left._1, right._2)
+        (left._1 + right._1 - m, left._2 + right._1 - m)
       }
     }
 
