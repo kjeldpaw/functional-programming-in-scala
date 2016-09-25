@@ -85,8 +85,7 @@ object ParallelParenthesesBalancing {
       else {
         val middle = from + (until - from) / 2
         val (left, right) = parallel(reduce(from, middle), reduce(middle, until))
-        val m = Math.min(left._1, right._2)
-        (left._1 + right._1 - m, left._2 + right._1 - m)
+        (left._1 + right._1 - Math.min(left._1, right._2), left._2 + right._2 - Math.min(left._1, right._2))
       }
     }
 
