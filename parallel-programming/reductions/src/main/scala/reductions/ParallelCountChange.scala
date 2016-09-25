@@ -58,13 +58,7 @@ object ParallelCountChange {
       }
     }
 
-    if (money == 0) {
-      0
-    } else if (coins.isEmpty) {
-      0
-    } else {
-      countChangeIter(money, coins)
-    }
+    countChangeIter(money, coins)
   }
 
   type Threshold = (Int, List[Int]) => Boolean
@@ -73,7 +67,7 @@ object ParallelCountChange {
     * specified list of coins for the specified amount of money.
     */
   def parCountChange(money: Int, coins: List[Int], threshold: Threshold): Int = {
-    if (threshold(money, coins) || coins.isEmpty || money <= coins.length) countChange(money, coins)
+    if (threshold(money, coins) || coins.isEmpty || money <= 0) countChange(money, coins)
     else {
       val (right, left) = parallel(parCountChange(money - coins.head, coins, threshold),
         parCountChange(money, coins.tail, threshold))
