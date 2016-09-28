@@ -1,13 +1,12 @@
 package kmeans
 
+import org.scalameter._
+
 import scala.annotation.tailrec
 import scala.collection._
-import scala.util.Random
-import org.scalameter._
-import common._
-
 import scala.collection.parallel.ParSeq
 import scala.collection.parallel.immutable.ParMap
+import scala.util.Random
 
 class KMeans {
 
