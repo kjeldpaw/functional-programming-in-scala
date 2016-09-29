@@ -45,8 +45,8 @@ class KMeans {
   }
 
   def classify(points: GenSeq[Point], means: GenSeq[Point]): GenMap[Point, GenSeq[Point]] = {
-    val pointsMeansMap: ParMap[Point, ParSeq[Point]] = points.par.groupBy(point => findClosest(point, means)) // group each point by the mean.
-    means.par.map((meanPoint: Point) => meanPoint -> pointsMeansMap.getOrElse(meanPoint, GenSeq())).toMap // Iterate over means to get means list for every mean point
+    val pointsMeansMap: GenMap[Point, GenSeq[Point]] = points.groupBy(point => findClosest(point, means)) // group each point by the mean.
+    means.map((meanPoint: Point) => meanPoint -> pointsMeansMap.getOrElse(meanPoint, GenSeq())).toMap // Iterate over means to get means list for every mean point
   }
 
   def findAverage(oldMean: Point, points: GenSeq[Point]): Point = if (points.length == 0) oldMean
@@ -63,11 +63,11 @@ class KMeans {
   }
 
   def update(classified: GenMap[Point, GenSeq[Point]], oldMeans: GenSeq[Point]): GenSeq[Point] = {
-    oldMeans.par.map((oldMean: Point) => findAverage(oldMean, classified(oldMean)))
+    oldMeans.map((oldMean: Point) => findAverage(oldMean, classified(oldMean)))
   }
 
   def converged(eta: Double)(oldMeans: GenSeq[Point], newMeans: GenSeq[Point]): Boolean = {
-    oldMeans.zip(newMeans).par.forall {
+    oldMeans.zip(newMeans).forall {
       case (oldMean, newMean) => oldMean.squareDistance(newMean) <= eta
     }
   }
