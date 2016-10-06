@@ -12,11 +12,21 @@ import common._
 class Simulator(val taskSupport: TaskSupport, val timeStats: TimeStatistics) {
 
   def updateBoundaries(boundaries: Boundaries, body: Body): Boundaries = {
-    ???
+    val result = new Boundaries
+    result.minY = Math.min(boundaries.minY, body.y)
+    result.minX = Math.min(boundaries.minX, body.x)
+    result.maxY = Math.max(boundaries.maxY, body.y)
+    result.maxX = Math.max(boundaries.maxX, body.x)
+    result
   }
 
   def mergeBoundaries(a: Boundaries, b: Boundaries): Boundaries = {
-    ???
+    val result = new Boundaries
+    result.minY = Math.min(a.minY, b.minY)
+    result.minX = Math.min(a.minX, b.minX)
+    result.maxY = Math.max(a.maxY, b.maxY)
+    result.maxX = Math.max(a.maxX, b.maxX)
+    result
   }
 
   def computeBoundaries(bodies: Seq[Body]): Boundaries = timeStats.timed("boundaries") {
@@ -28,7 +38,7 @@ class Simulator(val taskSupport: TaskSupport, val timeStats: TimeStatistics) {
   def computeSectorMatrix(bodies: Seq[Body], boundaries: Boundaries): SectorMatrix = timeStats.timed("matrix") {
     val parBodies = bodies.par
     parBodies.tasksupport = taskSupport
-    ???
+    parBodies.aggregate(new SectorMatrix(boundaries, SECTOR_PRECISION))(_.+=(_), _.combine(_))
   }
 
   def computeQuad(sectorMatrix: SectorMatrix): Quad = timeStats.timed("quad") {
@@ -38,7 +48,7 @@ class Simulator(val taskSupport: TaskSupport, val timeStats: TimeStatistics) {
   def updateBodies(bodies: Seq[Body], quad: Quad): Seq[Body] = timeStats.timed("update") {
     val parBodies = bodies.par
     parBodies.tasksupport = taskSupport
-    ???
+    parBodies.map(x => x.updated(quad)).seq
   }
 
   def eliminateOutliers(bodies: Seq[Body], sectorMatrix: SectorMatrix, quad: Quad): Seq[Body] = timeStats.timed("eliminate") {
@@ -84,13 +94,13 @@ class Simulator(val taskSupport: TaskSupport, val timeStats: TimeStatistics) {
   def step(bodies: Seq[Body]): (Seq[Body], Quad) = {
     // 1. compute boundaries
     val boundaries = computeBoundaries(bodies)
-    
+
     // 2. compute sector matrix
     val sectorMatrix = computeSectorMatrix(bodies, boundaries)
 
     // 3. compute quad tree
     val quad = computeQuad(sectorMatrix)
-    
+
     // 4. eliminate outliers
     val filteredBodies = eliminateOutliers(bodies, sectorMatrix, quad)
 
