@@ -1,13 +1,7 @@
 package barneshut
 
-import java.awt._
-import java.awt.event._
-import javax.swing._
-import javax.swing.event._
-import scala.collection.parallel.TaskSupport
-import scala.collection.parallel.Combiner
+import scala.collection.parallel.{Combiner, TaskSupport}
 import scala.collection.parallel.mutable.ParHashSet
-import common._
 
 class Simulator(val taskSupport: TaskSupport, val timeStats: TimeStatistics) {
 
